@@ -1,10 +1,12 @@
 package com.example.andrei.customlauncherdemo;
 
+import android.app.IntentService;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,6 +17,10 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +30,8 @@ public class AppsListActivity extends ActionBarActivity {
     private PackageManager manager;
     private List<AppDetail> apps;
     private ListView list;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,12 +88,29 @@ public class AppsListActivity extends ActionBarActivity {
     }
 
     private void addClickListener() {
+        final Intent serviceIntent = new Intent(this,AppsLog.class);
+
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent i = manager.getLaunchIntentForPackage(apps.get(position).name.toString());
+                serviceIntent.putExtra("appName",apps.get(position).name );
+                serviceIntent.putExtra("appLabel",apps.get(position).label );
+                startService(serviceIntent);
+
                 AppsListActivity.this.startActivity(i);
             }
         });
     }
+
+    private  int getClicks(JSONObject appUsage){
+        try {
+            int noOfClicks = appUsage.getInt("noOfClicks");
+            return noOfClicks;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
 }
+
